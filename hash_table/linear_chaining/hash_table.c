@@ -86,48 +86,34 @@ hash_table_remove(struct hash_table *map, const char *key) {
     // hash key
     unsigned long index = hash_string(key) % map->size;
 
-    // get the key at that index
-    struct hash_table_node *array = map->array;
-    if (array == NULL) {
-        return HASH_TABLE_STATUS_NOT_FOUND;
-    }
-    struct hash_table_node *entry = &array[index];
-    if (entry == NULL) {
+    // get the node at that index
+    struct hash_table_node *node = map->array[index];
+    if (node == NULL) {
         return HASH_TABLE_STATUS_NOT_FOUND;
     }
 
-    //todo: improve when we've changed the implementation
-    //if this is the only entry, we set the memory back to 0 
-    if (strcmp(entry->key, key) == 0) {
-        memset(entry, 0, sizeof(struct hash_table_node));
+    // if key at first entry matches
+    if (strcmp(node->key, key) == 0) {
+        // if there are more nodes, we have to set this bit in the array to the ptr_next
+        map->array[index] = node->ptr_next;
+        free(node);
         return HASH_TABLE_STATUS_SUCCESS;
     }
 
-    // if the key at the entry does not match the given key, we skip to the next hash_table_node in the linked list
-    struct hash_table_node *prev_entry = NULL;
-    while (strcmp(entry->key, key) != 0) {
-        if (entry->ptr_next == NULL) {
-            // if there is no next element, we return an error
-            return HASH_TABLE_STATUS_NOT_FOUND;
+    // otherwise keep looping until you find the entry
+    while (node->ptr_next != NULL) {
+        struct hash_table_node *nxt_node = node->ptr_next;
+        // if the next node has a matching key, we delete it and stick crnt node and nxt_nxt_node together
+        if (strcmp(nxt_node->key, key) == 0) {
+            node->ptr_next = nxt_node->ptr_next;
+            free(nxt_node);
+            return HASH_TABLE_STATUS_SUCCESS;
         }
-        prev_entry = entry;
-        entry = entry->ptr_next;
+        node = node->ptr_next;
     }
 
-    // if there was a previous el
-    if (prev_entry != NULL) {
-        // and there is a next el, we connect the two
-        if (entry->ptr_next != NULL) {
-            prev_entry->ptr_next = entry->ptr_next;
-        } else {
-        // and there is no next el, we free the prev el's ptr_next
-            prev_entry->ptr_next = NULL;
-        }
-    }
-
-    // delete the entry
-    free(entry);
-    return HASH_TABLE_STATUS_SUCCESS;
+    // if we've made it here, the key doesn't exist in the map
+    return HASH_TABLE_STATUS_NOT_FOUND;
 }
 
 void
