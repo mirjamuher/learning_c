@@ -1,6 +1,7 @@
 #include "hash_table.h"
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 static const int HASH_TABLE_INIT_SIZE = 7;
 static const float HASH_TABLE_LOAD_FACTOR = 0.7;
@@ -77,53 +78,66 @@ hash_table_insert(struct hash_table *map, const char *key, const void *value) {
     return HASH_TABLE_STATUS_SUCCESS;
 }
 
-// hash_table_remove removes the value of the given key.
-// it will return NOT_FOUND if the key could not be found
-enum hash_table_status
-hash_table_remove(struct hash_table *map, const char *key) {
-    // hash key
-    unsigned long index = hash_string(key) % map->size;
-
-    // get the key at that index
-    struct hash_table_node *array = map->array;
-    if (array == NULL) {
-        return HASH_TABLE_STATUS_NOT_FOUND;
-    }
-    struct hash_table_node *entry = &array[index];
-    if (entry == NULL) {
-        return HASH_TABLE_STATUS_NOT_FOUND;
-    }
-
-    //todo: improve when we've changed the implementation
-    //if this is the only entry, we set the memory back to 0 
-    if (strcmp(entry->key, key) == 0) {
-        memset(entry, 0, sizeof(struct hash_table_node));
-        return HASH_TABLE_STATUS_SUCCESS;
-    }
-
-    // if the key at the entry does not match the given key, we skip to the next hash_table_node in the linked list
-    struct hash_table_node *prev_entry = NULL;
-    while (strcmp(entry->key, key) != 0) {
-        if (entry->ptr_next == NULL) {
-            // if there is no next element, we return an error
-            return HASH_TABLE_STATUS_NOT_FOUND;
-        }
-        prev_entry = entry;
-        entry = entry->ptr_next;
-    }
-
-    // if there was a previous el
-    if (prev_entry != NULL) {
-        // and there is a next el, we connect the two
-        if (entry->ptr_next != NULL) {
-            prev_entry->ptr_next = entry->ptr_next;
-        } else {
-        // and there is no next el, we free the prev el's ptr_next
-            prev_entry->ptr_next = NULL;
+void
+hash_table_print(const struct hash_table *map, void (*value_printer)(const void *)) {
+    for (int i = 0; i < map->size; i++) {
+        if (map->array[i] != NULL) {
+            printf("%s: ", map->array[i]->key);
+            value_printer(map->array[i]->value);
+            printf("\n");
         }
     }
-
-    // delete the entry
-    free(entry);
-    return HASH_TABLE_STATUS_SUCCESS;
 }
+
+// todo rework below
+
+// // hash_table_remove removes the value of the given key.
+// // it will return NOT_FOUND if the key could not be found
+// enum hash_table_status
+// hash_table_remove(struct hash_table *map, const char *key) {
+//     // hash key
+//     unsigned long index = hash_string(key) % map->size;
+
+//     // get the key at that index
+//     struct hash_table_node *array = map->array;
+//     if (array == NULL) {
+//         return HASH_TABLE_STATUS_NOT_FOUND;
+//     }
+//     struct hash_table_node *entry = &array[index];
+//     if (entry == NULL) {
+//         return HASH_TABLE_STATUS_NOT_FOUND;
+//     }
+
+//     //todo: improve when we've changed the implementation
+//     //if this is the only entry, we set the memory back to 0 
+//     if (strcmp(entry->key, key) == 0) {
+//         memset(entry, 0, sizeof(struct hash_table_node));
+//         return HASH_TABLE_STATUS_SUCCESS;
+//     }
+
+//     // if the key at the entry does not match the given key, we skip to the next hash_table_node in the linked list
+//     struct hash_table_node *prev_entry = NULL;
+//     while (strcmp(entry->key, key) != 0) {
+//         if (entry->ptr_next == NULL) {
+//             // if there is no next element, we return an error
+//             return HASH_TABLE_STATUS_NOT_FOUND;
+//         }
+//         prev_entry = entry;
+//         entry = entry->ptr_next;
+//     }
+
+//     // if there was a previous el
+//     if (prev_entry != NULL) {
+//         // and there is a next el, we connect the two
+//         if (entry->ptr_next != NULL) {
+//             prev_entry->ptr_next = entry->ptr_next;
+//         } else {
+//         // and there is no next el, we free the prev el's ptr_next
+//             prev_entry->ptr_next = NULL;
+//         }
+//     }
+
+//     // delete the entry
+//     free(entry);
+//     return HASH_TABLE_STATUS_SUCCESS;
+// }

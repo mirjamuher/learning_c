@@ -34,3 +34,7 @@ hash_table_insert(struct hash_table *map, const char *key, const void *value);
 // it will return NOT_FOUND if the key could not be found
 enum hash_table_status
 hash_table_remove(struct hash_table *map, const char *key);
+
+// hash_table_print prints the content of the hash table
+void
+hash_table_print(const struct hash_table *map, void (*value_printer)(const void *));
