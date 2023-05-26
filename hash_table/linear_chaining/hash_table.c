@@ -29,11 +29,11 @@ hash_table_new(struct hash_table **map) {
     new_map->el_num = 0;
 
     // allocate memory to the array and set all values to 0
-    new_map->array = malloc(sizeof(struct hash_table_node) * new_map->size);
+    new_map->array = malloc(sizeof(struct hash_table_node *) * new_map->size);
     if (new_map->array == NULL) {
         return HASH_TABLE_STATUS_OUT_OF_MEMORY;
     }
-    memset(new_map->array, 0, sizeof(struct hash_table_node) * new_map->size);
+    memset(new_map->array, 0, sizeof(struct hash_table_node *) * new_map->size);
 
     // set map value to new_map address
     *map = new_map;
@@ -49,46 +49,31 @@ hash_table_insert(struct hash_table *map, const char *key, const void *value) {
         return HASH_TABLE_STATUS_FULL;
     }
 
+    // create new node
+    struct hash_table_node *new_node = malloc(sizeof(struct hash_table_node));
+    if (new_node == NULL) {
+        return HASH_TABLE_STATUS_OUT_OF_MEMORY;
+    }
+    new_node->key = key;
+    new_node->value = value;
+    new_node->ptr_next = NULL;
+
     // hash node's key and modulo it by size to get number in range [0, size)
     unsigned long index = hash_string(key) % map->size;
-    
-    // if that index is empty, insert
-    struct hash_table_node *node = &(map->array[index]);
-    if (node->key == NULL) {
-        node->key = key;
-        node->value = value;
-        
-        // increase counter of el in map
-        map->el_num += 1;
-    } 
-    // if it's not, append node to linked_list
-    else {
-        while (1) {
-            // CAREFUL: if the new key is identical to an existing key, overwrite the old value with new value
-            if (strcmp(node->key, key) == 0) {
-                node->value = value;
-                break;
-            }
-            if (node->ptr_next == NULL) {
-                // create new node
-                struct hash_table_node *new_node = malloc(sizeof(struct hash_table_node));
-                if (new_node == NULL) {
-                    return HASH_TABLE_STATUS_OUT_OF_MEMORY;
-                }
-                new_node->key = key;
-                new_node->value = value;
-                new_node->ptr_next = NULL;
 
-                node->ptr_next = new_node;
+    struct hash_table_node *node = map->array[index];
 
-                // increase counter of el in map
-                map->el_num += 1;
-                break;
-            }
-            node = node->ptr_next;
-        }
+    // if this spot in the hashtable has not yet been assigned, assign it and return success
+    if (node == NULL) {
+        map->array[index] = new_node;
+        return HASH_TABLE_STATUS_SUCCESS;
     }
 
+    while (node->ptr_next != NULL) {
+        node = node->ptr_next;
+    }
+
+    node->ptr_next = new_node;
     return HASH_TABLE_STATUS_SUCCESS;
 }
 

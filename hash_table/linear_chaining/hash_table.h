@@ -10,7 +10,7 @@ struct hash_table_node {
 struct hash_table {
     int size;
     int el_num;
-    struct hash_table_node *array;
+    struct hash_table_node **array;
 };
 
 enum hash_table_status {
