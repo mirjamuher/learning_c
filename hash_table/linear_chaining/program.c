@@ -31,6 +31,27 @@ int main(void) {
     status = hash_table_remove(map, "duck");
     printf("deleted, status is: %d \n", status);
 
+    status = hash_table_insert(map, "horse", "neigh");
+    printf("inserted, status is: %d \n", status);
+
+    status = hash_table_insert(map, "bat", "silent");
+    printf("inserted, status is: %d \n", status);
+
+    status = hash_table_insert(map, "owl", "hoot");
+    printf("inserted, status is: %d \n", status);
+
+    status = hash_table_insert(map, "bird", "chirp");
+    printf("inserted, status is: %d \n", status);
+
+    status = hash_table_insert(map, "elephant", "turoooh");
+    printf("inserted, status is: %d \n", status);
+
+    status = hash_table_insert(map, "lizard", "slipslipslip");
+    printf("inserted, status is: %d \n", status);
+
+    status = hash_table_insert(map, "bee", "buzz");
+    printf("inserted, status is: %d \n", status);
+
     printf("printing hash table values: \n");
     hash_table_print(map, &print_my_value);
 

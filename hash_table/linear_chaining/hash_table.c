@@ -67,6 +67,7 @@ hash_table_insert(struct hash_table *map, const char *key, const void *value) {
     // if this spot in the hashtable has not yet been assigned, assign it and return success
     if (node == NULL) {
         map->array[index] = new_node;
+        map->el_num += 1;
         return HASH_TABLE_STATUS_SUCCESS;
     }
 
@@ -76,6 +77,7 @@ hash_table_insert(struct hash_table *map, const char *key, const void *value) {
     }
 
     node->ptr_next = new_node;
+    map->el_num += 1;
     return HASH_TABLE_STATUS_SUCCESS;
 }
 
@@ -97,6 +99,7 @@ hash_table_remove(struct hash_table *map, const char *key) {
         // if there are more nodes, we have to set this bit in the array to the ptr_next
         map->array[index] = node->ptr_next;
         free(node);
+        map->el_num -= 1;
         return HASH_TABLE_STATUS_SUCCESS;
     }
 
@@ -107,6 +110,7 @@ hash_table_remove(struct hash_table *map, const char *key) {
         if (strcmp(nxt_node->key, key) == 0) {
             node->ptr_next = nxt_node->ptr_next;
             free(nxt_node);
+            map->el_num -= 1;
             return HASH_TABLE_STATUS_SUCCESS;
         }
         node = node->ptr_next;
@@ -119,10 +123,19 @@ hash_table_remove(struct hash_table *map, const char *key) {
 void
 hash_table_print(const struct hash_table *map, void (*value_printer)(const void *)) {
     for (int i = 0; i < map->size; i++) {
-        if (map->array[i] != NULL) {
-            printf("%s: ", map->array[i]->key);
-            value_printer(map->array[i]->value);
+        struct hash_table_node *node = map->array[i];
+        if (node != NULL) {
+            printf("%s: ",node->key);
+            value_printer(node->value);
             printf("\n");
+
+            while (node->ptr_next != NULL) {
+                struct hash_table_node *nxt_node = map->array[i]->ptr_next;
+                printf("%s: ", nxt_node->key);
+                value_printer(nxt_node->value);
+                printf("\n");   
+                node = nxt_node;
+            }
         }
     }
 }
