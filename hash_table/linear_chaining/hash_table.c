@@ -17,6 +17,17 @@ hash_string(const char *str) {
 }
 
 static enum hash_table_status
+hash_table_new_array(struct hash_table *map) {
+    // allocate memory to the array and set all values to 0
+    map->array = malloc(sizeof(struct hash_table_node *) * map->size);
+    if (map->array == NULL) {
+        return HASH_TABLE_STATUS_OUT_OF_MEMORY;
+    }
+    memset(map->array, 0, sizeof(struct hash_table_node *) * map->size);
+    return HASH_TABLE_STATUS_SUCCESS;
+}
+
+static enum hash_table_status
 hash_table_new_with_size(struct hash_table **map, const int map_size) {
     // allocate memory on the heap for the hash_table so it persists after function exits
     struct hash_table *new_map = malloc(sizeof(struct hash_table));
@@ -28,12 +39,11 @@ hash_table_new_with_size(struct hash_table **map, const int map_size) {
     new_map->size = map_size;
     new_map->el_num = 0;
 
-    // allocate memory to the array and set all values to 0
-    new_map->array = malloc(sizeof(struct hash_table_node *) * new_map->size);
-    if (new_map->array == NULL) {
-        return HASH_TABLE_STATUS_OUT_OF_MEMORY;
+    // allocate memory for array
+    enum hash_table_status status = hash_table_new_array(new_map);
+    if (status != HASH_TABLE_STATUS_SUCCESS) {
+        return status;
     }
-    memset(new_map->array, 0, sizeof(struct hash_table_node *) * new_map->size);
 
     // set map value to new_map address
     *map = new_map;
@@ -54,6 +64,9 @@ hash_table_insert(struct hash_table *map, const char *key, const void *value) {
         // step 1: create a new table with a new load factor
         // step 2: loop through old list and add every element to the new list
         // move on to below steps
+
+        // increase size of map
+        //map->size = map->size*2+1
         return HASH_TABLE_STATUS_FULL;
     }
 
