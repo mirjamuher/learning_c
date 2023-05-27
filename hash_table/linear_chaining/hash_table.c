@@ -65,9 +65,20 @@ hash_table_insert(struct hash_table *map, const char *key, const void *value) {
         // step 2: loop through old list and add every element to the new list
         // move on to below steps
 
-        // increase size of map
-        //map->size = map->size*2+1
-        return HASH_TABLE_STATUS_FULL;
+        // store old values
+        struct hash_table_node **old_array = map->array;
+        int old_size = map->size;
+
+        // increase size of map & create new empty array
+        map->size = map->size*2+1;
+        map->el_num = 0;
+        enum hash_table_status status = hash_table_new_array(map);
+        if (status != HASH_TABLE_STATUS_SUCCESS) {
+            return status;
+        }
+
+        // add old elements to new array
+        // todo from here
     }
 
     // create new node
